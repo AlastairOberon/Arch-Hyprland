@@ -10,13 +10,6 @@ echo "Configuring Git..."
 git config --global user.name "AlastairOberon"
 git config --global user.email "alastair.gba@gmail.com"
 
-echo "Installing paru..."
-git clone https://aur.archlinux.org/paru.git
-cd paru || exit
-makepkg -si --noconfirm
-cd ..
-rm -rf paru
-
 echo "Configuring Audio..."
 sudo pacman -S --noconfirm pipewire wireplumber
 
