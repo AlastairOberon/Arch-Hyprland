@@ -40,3 +40,5 @@ paru -S --noconfirm rar
 
 echo "Installing Hyprland..."
 sudo pacman -S --noconfirm hyprland
+
+sudo reboot now
