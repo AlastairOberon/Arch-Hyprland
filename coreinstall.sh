@@ -1,8 +1,8 @@
 set -e
 
 echo "Initializing Critical System Components..."
-mkdir "$HOME/.config/hypr"
-mkdir "$HOME/.config/hypr/HyprLand_Scripts"
+mkdir -p "$HOME/.config/hypr"
+mkdir -p "$HOME/.config/hypr/HyprLand_Scripts"
 sudo cp --noconfirm "$HOME/Arch-Hyprland/HyprLand_ConfigFiles/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
 sudo pacman -S --noconfirm xdg-desktop-portal-hyprland
 sudo pacman -S --noconfirm polkit-kde-agent
