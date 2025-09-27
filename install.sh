@@ -41,4 +41,16 @@ paru -S --noconfirm rar
 echo "Installing Hyprland..."
 sudo pacman -S --noconfirm hyprland
 
+echo "Initializing Critical System Components..."
+mkdir -p "$HOME/.config/hypr"
+mkdir -p "$HOME/.config/hypr/hyprland_hcripts"
+sudo cp "$HOME/Arch-Hyprland/hyprland_configfiles/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
+sudo pacman -S --noconfirm xdg-desktop-portal-hyprland
+sudo pacman -S --noconfirm polkit-kde-agent
+sudo pacman -S --noconfirm qt5-wayland qt6-wayland
+sudo pacman -S --noconfirm dunst
+sudo pacman -S --noconfirm brightnessctl
+sudo pacman -S --noconfirm pamixer
+sudo pacman -S --noconfirm jq
+
 sudo reboot now
