@@ -113,8 +113,8 @@ mkdir -p "$HOME/Pictures/wallpapers"
 sudo cp -r "$HOME/Arch-Hyprland/wallpapers" "$HOME/Pictures/wallpapers"
 
 echo "Theme Picker..."
-sudo pacman -S -noconfirm nwg-look
-sudo pacman -S -noconfirm qt5ct qt6ct kvantum
+sudo pacman -S --noconfirm nwg-look
+sudo pacman -S --noconfirm qt5ct qt6ct kvantum
 clear
 
 #echo "Initializing hyprpicker..."
