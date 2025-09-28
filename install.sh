@@ -15,11 +15,15 @@ git config --global user.email "alastair.gba@gmail.com"
 clear
 
 echo "Installing paru..."
-git clone https://aur.archlinux.org/paru.git
-cd paru || exit
-makepkg -si --noconfirm
-cd ..
-rm -rf paru
+if command -v yay >/dev/null 2>&1 || command -v paru >/dev/null 2>&1; then
+    echo "✅ AUR helper (yay or paru) already installed. Skipping installation..."
+else
+    git clone https://aur.archlinux.org/paru.git
+    cd paru || exit
+    makepkg -si --noconfirm
+    cd ..
+    rm -rf paru
+fi
 
 clear
 
