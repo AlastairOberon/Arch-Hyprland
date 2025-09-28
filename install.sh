@@ -97,7 +97,7 @@ sudo pacman -S --noconfirm cliphist
 clear
 
 echo "Initializing GrimBlast..."
-sudo pacman -S --noconfirm grimblast
+paru -S --noconfirm grimblast
 
 clear
 
