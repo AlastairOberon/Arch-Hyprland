@@ -89,9 +89,8 @@ progress_indicator $! "Installing Fonts"
 
 clear
 
-sudo pacman -S --noconfirm sddm &
-progress_indicator $! "Installing Display Manager"
-systemctl enable sddm.service
+sudo pacman -S --noconfirm sddm
+systemctl enable sddm.service --now
 
 
 clear
