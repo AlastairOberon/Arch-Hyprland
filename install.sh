@@ -10,16 +10,18 @@ progress_indicator() {
     local message=$2
     local i=0
     local spin=(" " "." ".." "...")
-    tput sc  
+    local rows=$(tput lines)
 
     while kill -0 "$pid" 2>/dev/null; do
-        tput rc 
+        # Move cursor to the bottom line, column 0
+        tput cup $((rows-1)) 0
         echo -ne "${YELLOW}${message}${spin[i]}${RESET}  "
         i=$(( (i+1) % 4 ))
         sleep 0.5
     done
 
-    tput rc
+    # Final message on the bottom line
+    tput cup $((rows-1)) 0
     echo -e "${GREEN}${message}${RESET}  "
 }
 
@@ -89,7 +91,7 @@ clear
 
 sudo pacman -S --noconfirm sddm &
 progress_indicator $! "Installing Display Manager"
-systemctl enable sddm.service --now
+systemctl enable sddm.service
 
 
 clear
