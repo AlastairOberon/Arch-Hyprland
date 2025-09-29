@@ -1,114 +1,161 @@
 set -e
 
-echo "Updating system..."
-sudo pacman -Syu --noconfirm
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+RED="\033[0;31m"
+RESET="\033[0m"
 
-echo "Installing packages..."
-sudo pacman -S --noconfirm vim git wget curl htop
+progress_indicator() {
+    local pid=$1
+    local message=$2
+    local i=0
+    local spin=(" " "." ".." "...")
+    tput sc  
+
+    while kill -0 "$pid" 2>/dev/null; do
+        tput rc 
+        echo -ne "${YELLOW}${message}${spin[i]}${RESET}  "
+        i=$(( (i+1) % 4 ))
+        sleep 0.5
+    done
+
+    tput rc
+    echo -e "${GREEN}${message}${RESET}  "
+}
+
+sudo pacman -Syu --noconfirm &
+progress_indicator $! "Updating system"
+
+sudo pacman -S --noconfirm vim git wget curl htop &
+progress_indicator $! "Installing Packages"
 
 clear 
 
-echo "Configuring Git..."
 git config --global user.name "AlastairOberon"
 git config --global user.email "alastair.gba@gmail.com"
 
 clear
 
-echo "Installing paru..."
 if command -v yay >/dev/null 2>&1 || command -v paru >/dev/null 2>&1; then
-    echo "✅ AUR helper (yay or paru) already installed. Skipping installation..."
+    echo "AUR helper (yay or paru) already installed. Skipping installation..."
 else
-    git clone https://aur.archlinux.org/paru.git
-    cd paru || exit
-    makepkg -si --noconfirm
-    cd ..
-    rm -rf paru
+    echo "No AUR helper detected."
+    echo "Choose an AUR helper to install:"
+    echo "1) paru"
+    echo "2) yay"
+    read -rp "Enter choice [1-2]: " choice
+
+    case "$choice" in
+        1)
+            git clone https://aur.archlinux.org/paru.git
+            cd paru || exit
+            makepkg -si --noconfirm
+            cd ..
+            rm -rf paru
+            ;;
+        2)
+            git clone https://aur.archlinux.org/yay.git
+            cd yay || exit
+            makepkg -si --noconfirm
+            cd ..
+            rm -rf yay
+            ;;
+        *)
+            echo -e "${RED}Invalid choice. Skipping AUR helper installation.${RESET}"
+            ;;
+    esac
+fi
+
+if command -v yay >/dev/null 2>&1; then
+    AUR_HELPER="yay"
+elif command -v paru >/dev/null 2>&1; then
+    AUR_HELPER="paru"
+else
+    echo -e "${RED}No AUR helper installed. Exiting...${RESET}"
+    exit 1
 fi
 
 clear
 
-echo "Configuring Audio..."
-sudo pacman -S --noconfirm pipewire wireplumber
+sudo pacman -S --noconfirm pipewire wireplumber &
+progress_indicator $! "Configuring Audio"
 
 clear
 
-echo "Installing Fonts..."
-sudo pacman -S --noconfirm ttf-cascadia-code-nerd ttf-cascadia-mono-nerd ttf-fira-code ttf-fira-mono ttf-fira-sans ttf-firacode-nerd ttf-iosevka-nerd ttf-iosevkaterm-nerd ttf-jetbrains-mono-nerd ttf-jetbrains-mono ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono
+sudo pacman -S --noconfirm ttf-cascadia-code-nerd ttf-cascadia-mono-nerd ttf-fira-code ttf-fira-mono ttf-fira-sans ttf-firacode-nerd ttf-iosevka-nerd ttf-iosevkaterm-nerd ttf-jetbrains-mono-nerd ttf-jetbrains-mono ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono &
+progress_indicator $! "Installing Fonts"
 
 clear
 
-echo "Installing Display Manager..."
-sudo pacman -S --noconfirm sddm
-systemctl enable sddm.service
+sudo pacman -S --noconfirm sddm &
+progress_indicator $! "Installing Display Manager"
+systemctl enable sddm.service --now
+
 
 clear
 
-echo "Installing Kitty..."
-sudo pacman -S --noconfirm kitty
+sudo pacman -S --noconfirm kitty &
+progress_indicator $! "Installing Kitty"
 
 clear
 
-echo "Installing IDEs..."
-paru -S --noconfirm visual-studio-code-bin
-sudo pacman -S --noconfirm nano
+$AUR_HELPER -S --noconfirm visual-studio-code-bin &
+progress_indicator $! "Installing VSCode"
+sudo pacman -S --noconfirm nano &
+progress_indicator $! "Installing nano"
 
 clear
 
-echo "Installing Compression Utilities..."
-sudo pacman -S --noconfirm tar zip
-paru -S --noconfirm rar
+(sudo pacman -S --noconfirm tar zip && $AUR_HELPER -S --noconfirm rar) &
+progress_indicator $! "Installing Compression Utilities"
 
 clear
 
 echo "Installing Hyprland..."
-sudo pacman -S --noconfirm hyprland
-paru -S --noconfirm hyprlock
-paru -S --noconfirm hypridle
+sudo pacman -S --noconfirm hyprland hyprlock hypridle hyprpaper &
+progress_indicator $! "Installing Hyprland"
+
 clear
 
-echo "Initializing Critical System Components..."
-mkdir -p "$HOME/.config/hypr"
+
+mkdir -p "$HOME/.config/hypr" 
 mkdir -p "$HOME/.config/hypr/hyprland_hcripts"
+
 sudo cp "$HOME/Arch-Hyprland/hyprland_configfiles/hyprland.conf" "$HOME/.config/hypr/hyprland.conf"
 sudo cp "$HOME/Arch-Hyprland/hyprland_configfiles/hyprlock.conf" "$HOME/.config/hypr/hyprlock.conf"
 sudo cp "$HOME/Arch-Hyprland/hyprland_configfiles/hypridle.conf" "$HOME/.config/hypr/hypridle.conf"
-paru -S --noconfirm wlogout
+$AUR_HELPER -S --noconfirm wlogout &
+progress_indicator $! "Initializing wlogout"
 
 mkdir -p "$HOME/.config/wlogout"
 sudo cp "$HOME/Arch-Hyprland/wlogout/layout" "$HOME/.config/wlogout/layout"
 sudo cp "$HOME/Arch-Hyprland/wlogout/style.css" "$HOME/.config/wlogout/style.css"
-sudo pacman -S --noconfirm xdg-desktop-portal-hyprland
-sudo pacman -S --noconfirm polkit-kde-agent
-sudo pacman -S --noconfirm qt5-wayland qt6-wayland
-sudo pacman -S --noconfirm dunst
-sudo pacman -S --noconfirm brightnessctl
-sudo pacman -S --noconfirm pamixer
-sudo pacman -S --noconfirm jq
+sudo pacman -S --noconfirm xdg-desktop-portal-hyprland polkit-kde-agent qt5-wayland qt6-wayland dunst brightnessctl pamixer jq &
+progress_indicator $! "Initializing Critical System Components"
 
 clear
 
-echo "Initializing Rofi..."
-sudo pacman -S --noconfirm rofi
+sudo pacman -S --noconfirm rofi &
+progress_indicator $! "Initializing Rofi"
 mkdir -p "$HOME/.config/rofi"
-#sudo cp "$HOME/Arch-Hyprland/rofi/config.rasi" "$HOME/.config/rofi/config.rasi"
-rofi -dump-config > ~/.config/rofi/config.rasi
+sudo cp "$HOME/Arch-Hyprland/rofi/config.rasi" "$HOME/.config/rofi/config.rasi"
+#rofi -dump-config > ~/.config/rofi/config.rasi
+
 
 clear
 
-echo "Initializing Cliphist..."
-sudo pacman -S --noconfirm cliphist
+sudo pacman -S --noconfirm cliphist &
+progress_indicator $! "Initializing Cliphist"
 
 clear
 
-echo "Initializing GrimBlast..."
-paru -S --noconfirm grimblast
+$AUR_HELPER -S --noconfirm grimblast &
+progress_indicator $! "GrimBlast"
 
 clear
 
-echo "Initializing Wallpapers..."
-paru -S --noconfirm swww
-paru -S --noconfirm hyprpaper
-paru -S --noconfirm waypaper
+$AUR_HELPER -S --noconfirm swww waypaper &
+progress_indicator $! "Initializing Wallpapers"
 mkdir -p "$HOME/Pictures/wallpapers"
 sudo cp -r "$HOME/Arch-Hyprland/wallpapers" "$HOME/Pictures/wallpapers"
 
@@ -117,8 +164,5 @@ sudo pacman -S --noconfirm nwg-look
 sudo pacman -S --noconfirm qt5ct qt6ct kvantum
 clear
 
-#echo "Initializing hyprpicker..."
-#paru -S --noconfirm hyprpicker
-
-
-sudo reboot now
+read -rp "Reboot now? [y/N]: " reboot_choice
+[[ "$reboot_choice" =~ ^[Yy]$ ]] && sudo reboot
