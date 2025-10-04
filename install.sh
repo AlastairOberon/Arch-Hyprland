@@ -89,7 +89,7 @@ sudo pacman -S --noconfirm kitty
 clear
 
 echo -e "${YELLOW}Installing and Initializing IEDs${RESET}"
-$AUR_HELPER -S --noconfirm vscodium
+$AUR_HELPER -S vscodium
 sudo pacman -S --noconfirm nano
 
 clear
